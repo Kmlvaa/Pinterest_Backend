@@ -1,22 +1,25 @@
+using Pinterest.Helper;
 
 namespace Pinterest
 {
 	public class Program
 	{
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
 			// Add services to the container.
 
 			builder.Services.AddControllers();
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen();
+
+			builder.Services.AddAppServices(builder);
 
 			var app = builder.Build();
 
-			// Configure the HTTP request pipeline.
+			await DataSeed.InitializeAsync(app.Services);
+
 			if (app.Environment.IsDevelopment())
 			{
 				app.UseSwagger();
@@ -25,10 +28,15 @@ namespace Pinterest
 
 			app.UseHttpsRedirection();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
 
-
 			app.MapControllers();
+			app.UseCors(x => x
+				.AllowAnyMethod()
+				.AllowAnyHeader()
+				.SetIsOriginAllowed(origin => true) // allow any origin 
+				.AllowCredentials());
 
 			app.Run();
 		}

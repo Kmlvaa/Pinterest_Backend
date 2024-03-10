@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include="AutoMapper\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

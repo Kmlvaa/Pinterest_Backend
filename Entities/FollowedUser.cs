@@ -1,9 +1,9 @@
 ﻿namespace Pinterest.Entities
 {
-	public class Follows
+	public class FollowedUser
 	{
 		public int Id { get; set; }
 		public int UserId { get; set; }
-		public User User { get; set; }
+		public AppUser User { get; set; }
 	}
 }

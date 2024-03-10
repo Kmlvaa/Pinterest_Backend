@@ -14,11 +14,13 @@ namespace Pinterest.Data
 			
 		}
 		public DbSet<AppUser> AppUsers {  get; set; }
-		public DbSet<AccountDetails> AccountDetails { get; set; }
-		public DbSet<Country> Country { get; set; }
-		public DbSet<Follows> Follows { get; set; }
+		public DbSet<UserDetail> UserDetails { get; set; }
 		public DbSet<Post> Posts { get; set; }
-		public DbSet<User> Users { get; set; }
+		public DbSet<Comment> Comments { get; set; }
+		public DbSet<Like> Likes { get; set; }
+		public DbSet<Saved> Saveds { get; set; }
+		public DbSet<FollowedUser> FollowedUsers { get; set; }
+		public DbSet<FollowerUser> FollowerUsers { get; set;}
 
 	}
 }

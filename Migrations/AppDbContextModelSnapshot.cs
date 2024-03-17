@@ -211,9 +211,6 @@ namespace Pinterest.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<int>("UserDetailId")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -227,9 +224,6 @@ namespace Pinterest.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("UserDetailId")
-                        .IsUnique();
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -395,7 +389,19 @@ namespace Pinterest.Migrations
                     b.Property<int>("AppUserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("CoverUrl")
+                    b.Property<string>("AppUserId1")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Firstname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Lastname")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -403,15 +409,13 @@ namespace Pinterest.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Pronoun")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserName")
+                    b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId1");
 
                     b.ToTable("UserDetails");
                 });
@@ -465,17 +469,6 @@ namespace Pinterest.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Pinterest.Entities.AppUser", b =>
-                {
-                    b.HasOne("Pinterest.Entities.UserDetail", "UserDetail")
-                        .WithOne("AppUser")
-                        .HasForeignKey("Pinterest.Entities.AppUser", "UserDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserDetail");
                 });
 
             modelBuilder.Entity("Pinterest.Entities.Comment", b =>
@@ -544,6 +537,17 @@ namespace Pinterest.Migrations
                     b.Navigation("AppUser");
                 });
 
+            modelBuilder.Entity("Pinterest.Entities.UserDetail", b =>
+                {
+                    b.HasOne("Pinterest.Entities.AppUser", "AppUser")
+                        .WithMany("UserDetail")
+                        .HasForeignKey("AppUserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
+                });
+
             modelBuilder.Entity("Pinterest.Entities.AppUser", b =>
                 {
                     b.Navigation("FollowedUsers");
@@ -553,6 +557,8 @@ namespace Pinterest.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("Saveds");
+
+                    b.Navigation("UserDetail");
                 });
 
             modelBuilder.Entity("Pinterest.Entities.Post", b =>
@@ -560,12 +566,6 @@ namespace Pinterest.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
-                });
-
-            modelBuilder.Entity("Pinterest.Entities.UserDetail", b =>
-                {
-                    b.Navigation("AppUser")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

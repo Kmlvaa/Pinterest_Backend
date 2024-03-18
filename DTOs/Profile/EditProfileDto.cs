@@ -12,5 +12,6 @@ namespace Pinterest.DTOs.Profile
 		public string Username { get; set; }
 		public string ProfileUrl { get; set; }
 		public string Gender { get; set; }
+		public int UserId { get; set; }
 	}
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Pinterest.Migrations
 {
     /// <inheritdoc />
-    public partial class tables : Migration
+    public partial class first : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -164,15 +164,14 @@ namespace Pinterest.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    UserId1 = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FollowedUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FollowedUsers_AspNetUsers_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_FollowedUsers_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -184,15 +183,14 @@ namespace Pinterest.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    UserId1 = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FollowerUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_FollowerUsers_AspNetUsers_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_FollowerUsers_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -208,15 +206,14 @@ namespace Pinterest.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AppUserId = table.Column<int>(type: "int", nullable: false),
-                    AppUserId1 = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Posts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Posts_AspNetUsers_AppUserId1",
-                        column: x => x.AppUserId1,
+                        name: "FK_Posts_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -228,15 +225,14 @@ namespace Pinterest.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AppUserId = table.Column<int>(type: "int", nullable: false),
-                    AppUserId1 = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Saveds", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Saveds_AspNetUsers_AppUserId1",
-                        column: x => x.AppUserId1,
+                        name: "FK_Saveds_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -254,15 +250,14 @@ namespace Pinterest.Migrations
                     About = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ProfilePicUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AppUserId = table.Column<int>(type: "int", nullable: false),
-                    AppUserId1 = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserDetails_AspNetUsers_AppUserId1",
-                        column: x => x.AppUserId1,
+                        name: "FK_UserDetails_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -353,14 +348,14 @@ namespace Pinterest.Migrations
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FollowedUsers_UserId1",
+                name: "IX_FollowedUsers_UserId",
                 table: "FollowedUsers",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FollowerUsers_UserId1",
+                name: "IX_FollowerUsers_UserId",
                 table: "FollowerUsers",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Likes_PostId",
@@ -368,19 +363,20 @@ namespace Pinterest.Migrations
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Posts_AppUserId1",
+                name: "IX_Posts_AppUserId",
                 table: "Posts",
-                column: "AppUserId1");
+                column: "AppUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Saveds_AppUserId1",
+                name: "IX_Saveds_AppUserId",
                 table: "Saveds",
-                column: "AppUserId1");
+                column: "AppUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserDetails_AppUserId1",
+                name: "IX_UserDetails_AppUserId",
                 table: "UserDetails",
-                column: "AppUserId1");
+                column: "AppUserId",
+                unique: true);
         }
 
         /// <inheritdoc />

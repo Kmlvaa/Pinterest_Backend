@@ -12,8 +12,8 @@ using Pinterest.Data;
 namespace Pinterest.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240317103425_tables")]
-    partial class tables
+    [Migration("20240318150644_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -264,16 +264,13 @@ namespace Pinterest.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("FollowedUsers");
                 });
@@ -286,16 +283,13 @@ namespace Pinterest.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("FollowerUsers");
                 });
@@ -326,10 +320,7 @@ namespace Pinterest.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AppUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("AppUserId1")
+                    b.Property<string>("AppUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -350,7 +341,7 @@ namespace Pinterest.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppUserId1");
+                    b.HasIndex("AppUserId");
 
                     b.ToTable("Posts");
                 });
@@ -363,16 +354,13 @@ namespace Pinterest.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AppUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("AppUserId1")
+                    b.Property<string>("AppUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppUserId1");
+                    b.HasIndex("AppUserId");
 
                     b.ToTable("Saveds");
                 });
@@ -389,10 +377,7 @@ namespace Pinterest.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("AppUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("AppUserId1")
+                    b.Property<string>("AppUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -418,7 +403,8 @@ namespace Pinterest.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppUserId1");
+                    b.HasIndex("AppUserId")
+                        .IsUnique();
 
                     b.ToTable("UserDetails");
                 });
@@ -489,7 +475,7 @@ namespace Pinterest.Migrations
                 {
                     b.HasOne("Pinterest.Entities.AppUser", "User")
                         .WithMany("FollowedUsers")
-                        .HasForeignKey("UserId1")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -500,7 +486,7 @@ namespace Pinterest.Migrations
                 {
                     b.HasOne("Pinterest.Entities.AppUser", "User")
                         .WithMany("FollowerUsers")
-                        .HasForeignKey("UserId1")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -522,7 +508,7 @@ namespace Pinterest.Migrations
                 {
                     b.HasOne("Pinterest.Entities.AppUser", "AppUser")
                         .WithMany("Posts")
-                        .HasForeignKey("AppUserId1")
+                        .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -533,7 +519,7 @@ namespace Pinterest.Migrations
                 {
                     b.HasOne("Pinterest.Entities.AppUser", "AppUser")
                         .WithMany("Saveds")
-                        .HasForeignKey("AppUserId1")
+                        .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -543,8 +529,8 @@ namespace Pinterest.Migrations
             modelBuilder.Entity("Pinterest.Entities.UserDetail", b =>
                 {
                     b.HasOne("Pinterest.Entities.AppUser", "AppUser")
-                        .WithMany("UserDetail")
-                        .HasForeignKey("AppUserId1")
+                        .WithOne("UserDetail")
+                        .HasForeignKey("Pinterest.Entities.UserDetail", "AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -561,7 +547,8 @@ namespace Pinterest.Migrations
 
                     b.Navigation("Saveds");
 
-                    b.Navigation("UserDetail");
+                    b.Navigation("UserDetail")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Pinterest.Entities.Post", b =>

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Pinterest.Data;
 using Pinterest.DTOs.AccountDto;
 using Pinterest.DTOs.User;
 using Pinterest.Entities;
@@ -16,12 +17,14 @@ namespace Pinterest.Services
 		private readonly UserManager<AppUser> _userManager;
 		private readonly RoleManager<IdentityRole> _roleManager;
 		private readonly IConfiguration _config;
+		private readonly AppDbContext _appDbContext;
 
-		public AuthService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
+		public AuthService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration config, AppDbContext appDbContext)
 		{
 			_userManager = userManager;
 			_roleManager = roleManager;
 			_config = config;
+			_appDbContext = appDbContext;
 		}
 
 		public async Task<(int, string)> Register(RegisterDto dto, string role)
@@ -47,6 +50,19 @@ namespace Pinterest.Services
 
 			if (await _roleManager.RoleExistsAsync(UserRoles.User))
 				await _userManager.AddToRoleAsync(user, role);
+
+			UserDetail userDetail = new UserDetail()
+			{
+				AppUserId = user.Id,
+				Firstname = dto.Firstname,
+				Lastname = dto.Lastname,
+				Username = dto.Username,
+				About = "About",
+				Gender = "Gender",
+				ProfilePicUrl = "random"
+			};
+			_appDbContext.Add(userDetail);
+			_appDbContext.SaveChanges();
 
 			return (1, "User created successfully!");
 		}

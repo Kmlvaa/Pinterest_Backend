@@ -1,6 +1,6 @@
 ﻿namespace Pinterest.DTOs.Post
 {
-	public class AddPostDto
+	public class GetAllPostsDto
 	{
 		public string Title { get; set; }
 		public string Description { get; set; }

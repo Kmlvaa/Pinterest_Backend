@@ -18,6 +18,23 @@ namespace Pinterest.Controllers
 			_appDbContext = appDbContext;
 			_contextAccessor = contextAccessor;
 		}
+		[HttpGet]
+		[Route("getComments")]
+		public IActionResult GetComments()
+		{
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var tokenHandler = new JwtSecurityTokenHandler();
+			var token = tokenHandler.ReadJwtToken(accessToken);
+			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
+			var userId = userIdClaim.Value;
+
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.AppUserId == userId);
+			if (post != null) return NotFound();
+
+
+
+			return Ok();
+		}
 		[HttpPost]
 		[Route("addComment")]
 		public IActionResult AddComment([FromBody] AddCommentDto dto)
@@ -30,11 +47,12 @@ namespace Pinterest.Controllers
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
 			var userId = userIdClaim.Value;
 
-			var post = _appDbContext.Posts.FirstOrDefault(x => x.AppUserId == userId);
+			var posts= _appDbContext.Posts.Where(x => x.AppUserId == userId).ToList();
+
+			//FInd the post of user that this comment is belong to
 
 			var comment = new Comment()
 			{
-				PostId = post.Id,
 				Description = dto.Description,
 				CreatedDate = DateTime.UtcNow,
 			};

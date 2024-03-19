@@ -18,7 +18,30 @@ namespace Pinterest.Controllers
 			_contextAccessor = contextAccessor;
 		}
 		[HttpGet]
-		[Route("getPosts/{id}")]
+		[Route("getAllPosts")]
+		public IActionResult GetAllPosts()
+		{
+			var posts = _appDbContext.Posts.ToList();
+			if(posts is null) return NotFound();
+
+			var list = new List<GetAllPostsDto>();
+
+			foreach(var post in posts)
+			{
+				var postDto = new GetAllPostsDto()
+				{
+					Title = post.Title,
+					Description = post.Description,
+					CreatedAt = post.CreatedAt,
+					Url = post.ImageUrl
+				};
+				list.Add(postDto);
+			}
+
+			return Ok(list);
+		}
+		[HttpGet]
+		[Route("getPosts")]
 		public IActionResult GetPosts()
 		{
 			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
@@ -30,9 +53,24 @@ namespace Pinterest.Controllers
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
 			var userId = userIdClaim.Value;
 
-			var posts = _appDbContext.Posts.FirstOrDefault(x => x.AppUserId == userId);
+			var posts = _appDbContext.Posts.Where(x => x.AppUserId == userId).ToList();
+			if (posts is null) return NotFound();
 
-			return Ok();
+			var list = new List<GetPostDto>();
+
+			foreach (var post in posts)
+			{
+				var postDto = new GetPostDto()
+				{
+					Title = post.Title,
+					Description = post.Description,
+					CreatedAt = post.CreatedAt,
+					Url = post.ImageUrl
+				};
+				list.Add(postDto);
+			}
+
+			return Ok(list);
 		}
 
 		[HttpPost]
@@ -51,6 +89,7 @@ namespace Pinterest.Controllers
 
 			var post = new Post()
 			{
+				AppUserId = userId,
 				Title = dto.Title,
 				Description = dto.Description,
 				CreatedAt = DateTime.UtcNow,
@@ -58,6 +97,18 @@ namespace Pinterest.Controllers
 			};
 
 			_appDbContext.Add(post);
+			_appDbContext.SaveChanges();
+
+			return Ok();
+		}
+		[HttpDelete]
+		[Route("deletePost/{id}")]
+		public IActionResult DeletePost(int id)
+		{
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post is null) return NotFound();
+
+			_appDbContext.Posts.Remove(post);
 			_appDbContext.SaveChanges();
 
 			return Ok();

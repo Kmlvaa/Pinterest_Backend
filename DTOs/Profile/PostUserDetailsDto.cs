@@ -1,9 +1,8 @@
 ﻿using FluentValidation;
-using Pinterest.DTOs.AccountDto;
 
 namespace Pinterest.DTOs.Profile
 {
-	public class EditProfileDto
+	public class PostUserDetailsDto
 	{
 		public string Firstname { get; set; }
 		public string Lastname { get; set; }

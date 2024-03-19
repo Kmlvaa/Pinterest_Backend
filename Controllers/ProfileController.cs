@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pinterest.Data;
 using Pinterest.DTOs.Profile;
@@ -20,8 +21,8 @@ namespace Pinterest.Controllers
 		}
 
 		[HttpGet]
-		[Route("userDetails")]
-		public IActionResult UserDetails()
+		[Route("getUserDetails")]
+		public IActionResult GetUserDetails()
 		{
 			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
 			var tokenHandler = new JwtSecurityTokenHandler();
@@ -32,7 +33,7 @@ namespace Pinterest.Controllers
 			var data = _dbContext.UserDetails.FirstOrDefault(x => x.AppUserId == userId);
 			if (data == null) return NotFound();
 
-			var dto = new EditProfileDto
+			var dto = new GetUserDetailsDto
 			{
 				Firstname = data.Firstname,
 				Lastname = data.Lastname,
@@ -42,14 +43,14 @@ namespace Pinterest.Controllers
 				Gender = data.Gender,
 			};
 
-			return Ok();
+			return Ok(dto);
 		}
 
 		[HttpPut]
-		[Route("userDetails")]
-		public IActionResult UserDetails(EditProfileDto dto)
+		[Route("PutUserDetails")]
+		public IActionResult PutUserDetails(EditProfileDto dto)
 		{
-			if(!ModelState.IsValid) return BadRequest();
+			if (!ModelState.IsValid) return BadRequest();
 
 			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
 			var tokenHandler = new JwtSecurityTokenHandler();

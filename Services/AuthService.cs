@@ -61,7 +61,16 @@ namespace Pinterest.Services
 				Gender = "Gender",
 				ProfilePicUrl = "random"
 			};
+			AccountDetails accountManagement = new AccountDetails()
+			{
+				Email = dto.Email,
+				Username = dto.Username,
+				Country = "Azerbaijan",
+				BirthDate = DateTime.Now,
+				AppUserId = user.Id,
+			};
 			_appDbContext.Add(userDetail);
+			_appDbContext.AccountDetails.Add(accountManagement);
 			_appDbContext.SaveChanges();
 
 			return (1, "User created successfully!");
@@ -77,7 +86,7 @@ namespace Pinterest.Services
 			var userRoles = await _userManager.GetRolesAsync(user);
 			var authClaims = new List<Claim>
 			{
-			   new Claim(ClaimTypes.Name, user.UserName),
+			   new Claim("Username", user.UserName),
 			   new Claim("UserID",user.Id),
 			   new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			};

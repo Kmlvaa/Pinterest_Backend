@@ -47,7 +47,7 @@ namespace Pinterest.Controllers
 		}
 
 		[HttpPut]
-		[Route("PutUserDetails")]
+		[Route("putUserDetails")]
 		public IActionResult PutUserDetails(EditProfileDto dto)
 		{
 			if (!ModelState.IsValid) return BadRequest();
@@ -55,6 +55,7 @@ namespace Pinterest.Controllers
 			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var token = tokenHandler.ReadJwtToken(accessToken);
+			if(token is null) return BadRequest();
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
 			var userId = userIdClaim.Value;
 

@@ -73,6 +73,33 @@ namespace Pinterest.Helper
 			{
 				options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 			});
+			builder.Services.AddSingleton<FileService>();
+
+			builder.Services.AddSwaggerGen(opt =>
+			{
+				opt.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme
+				{
+					Name = "Authorization",
+					Description = "Enter the Bearer Authorization : Bearer Genreated-JWT-Token",
+					In = ParameterLocation.Header,
+					Type = SecuritySchemeType.ApiKey,
+					Scheme = "Bearer"
+				});
+
+				opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+				{
+					{
+						new OpenApiSecurityScheme
+						{
+							Reference = new OpenApiReference
+							{
+								Type=ReferenceType.SecurityScheme,
+								Id=JwtBearerDefaults.AuthenticationScheme,
+							}
+						},new string[]{}
+					}
+				});
+			});
 		}
 	}
 }

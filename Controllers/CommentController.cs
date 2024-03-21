@@ -19,25 +19,34 @@ namespace Pinterest.Controllers
 			_contextAccessor = contextAccessor;
 		}
 		[HttpGet]
-		[Route("getComments")]
-		public IActionResult GetComments()
+		[Route("getComments/{id}")]
+		public IActionResult GetComments(int id)
 		{
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
-			var tokenHandler = new JwtSecurityTokenHandler();
-			var token = tokenHandler.ReadJwtToken(accessToken);
-			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
-			var userId = userIdClaim.Value;
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if(post == null) return NotFound();
 
-			var post = _appDbContext.Posts.FirstOrDefault(x => x.AppUserId == userId);
-			if (post != null) return NotFound();
+			var comments = _appDbContext.Comments.Where(x => x.PostId == post.Id).ToList();
+			if(comments == null) return NotFound();
 
+			var list = new List<GetCommentsDto>();
 
+			foreach (var comment in comments)
+			{
+				var dto = new GetCommentsDto()
+				{
+					Id = comment.Id,
+					CreatedAt = comment.CreatedDate,
+					Comment = comment.Description,
+					Username = _appDbContext.Users.FirstOrDefault(x => x.Id == comment.AppUserId).UserName
+				};
+				list.Add(dto);
+			}
 
-			return Ok();
+			return Ok(list);
 		}
 		[HttpPost]
-		[Route("addComment")]
-		public IActionResult AddComment([FromBody] AddCommentDto dto)
+		[Route("addComment/{id}")]
+		public IActionResult AddComment(int id, [FromBody] AddCommentDto dto)
 		{
 			if (!ModelState.IsValid) return NotFound();
 
@@ -47,16 +56,30 @@ namespace Pinterest.Controllers
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
 			var userId = userIdClaim.Value;
 
-			var posts= _appDbContext.Posts.Where(x => x.AppUserId == userId).ToList();
-
-			//FInd the post of user that this comment is belong to
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post == null) return NotFound();
 
 			var comment = new Comment()
 			{
 				Description = dto.Description,
-				CreatedDate = DateTime.UtcNow,
+				CreatedDate = dto.CreatedDate,
+				PostId = id,
+				AppUserId = userId,
 			};
-			_appDbContext.Add(comment);
+
+			_appDbContext.Comments.Add(comment);
+			_appDbContext.SaveChanges();
+
+			return Ok();
+		}
+		[HttpDelete]
+		[Route("deleteComment/{id}")]
+		public IActionResult DeleteComment(int id)
+		{
+			var comment = _appDbContext.Comments.FirstOrDefault(x => x.Id == id);
+			if (comment == null) return NotFound();
+
+			_appDbContext.Comments.Remove(comment);
 			_appDbContext.SaveChanges();
 
 			return Ok();

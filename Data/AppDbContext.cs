@@ -15,6 +15,7 @@ namespace Pinterest.Data
 		}
 		public DbSet<AppUser> AppUsers {  get; set; }
 		public DbSet<UserDetail> UserDetails { get; set; }
+		public DbSet<AccountDetails> AccountDetails { get; set; }
 		public DbSet<Post> Posts { get; set; }
 		public DbSet<Comment> Comments { get; set; }
 		public DbSet<Like> Likes { get; set; }

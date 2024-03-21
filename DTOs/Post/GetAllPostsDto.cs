@@ -6,5 +6,6 @@
 		public string Description { get; set; }
 		public DateTime CreatedAt { get; set; }
 		public string Url { get; set; }
+		public string User { get; set; }
 	}
 }

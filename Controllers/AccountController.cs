@@ -64,5 +64,9 @@ namespace Pinterest.Controllers
 
 			return Ok(message);
 		}
+		public async Task<IActionResult> LogOut()
+		{
+			return RedirectToAction(nameof(Login));
+		}
 	}
 }

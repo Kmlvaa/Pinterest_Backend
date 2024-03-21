@@ -2,6 +2,7 @@
 using Pinterest.Data;
 using Pinterest.DTOs.Post;
 using Pinterest.Entities;
+using Pinterest.Services;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
@@ -12,10 +13,12 @@ namespace Pinterest.Controllers
 	{
 		private readonly AppDbContext _appDbContext;
 		private readonly IHttpContextAccessor _contextAccessor;
-		public PostController(AppDbContext appDbContext, IHttpContextAccessor contextAccessor)
+		private readonly FileService _fileService;
+		public PostController(AppDbContext appDbContext, IHttpContextAccessor contextAccessor, FileService fileService)
 		{
 			_appDbContext = appDbContext;
 			_contextAccessor = contextAccessor;
+			_fileService = fileService;
 		}
 		[HttpGet]
 		[Route("getAllPosts")]
@@ -33,8 +36,9 @@ namespace Pinterest.Controllers
 					Title = post.Title,
 					Description = post.Description,
 					CreatedAt = post.CreatedAt,
-					Url = post.ImageUrl
-				};
+					Url = post.ImageUrl,
+					User = _appDbContext.Users.FirstOrDefault(x => x.Id == post.AppUserId).UserName
+			};
 				list.Add(postDto);
 			}
 
@@ -51,7 +55,10 @@ namespace Pinterest.Controllers
 			var token = tokenHandler.ReadJwtToken(accessToken);
 
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
+			var userNameClaim = token.Claims.FirstOrDefault(x => x.Type == "Username");
+
 			var userId = userIdClaim.Value;
+			var username = userNameClaim.Value;
 
 			var posts = _appDbContext.Posts.Where(x => x.AppUserId == userId).ToList();
 			if (posts is null) return NotFound();
@@ -62,10 +69,12 @@ namespace Pinterest.Controllers
 			{
 				var postDto = new GetPostDto()
 				{
+					Id = post.Id,
 					Title = post.Title,
 					Description = post.Description,
 					CreatedAt = post.CreatedAt,
-					Url = post.ImageUrl
+					Url = post.ImageUrl,
+					User = username
 				};
 				list.Add(postDto);
 			}
@@ -87,16 +96,18 @@ namespace Pinterest.Controllers
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
 			var userId = userIdClaim.Value;
 
+			var Url = _fileService.AddFile(dto.Url);
+
 			var post = new Post()
 			{
 				AppUserId = userId,
 				Title = dto.Title,
 				Description = dto.Description,
 				CreatedAt = DateTime.UtcNow,
-				ImageUrl = dto.Url,
+				ImageUrl = Url,
 			};
 
-			_appDbContext.Add(post);
+			_appDbContext.Posts.Add(post);
 			_appDbContext.SaveChanges();
 
 			return Ok();
@@ -107,6 +118,8 @@ namespace Pinterest.Controllers
 		{
 			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
 			if (post is null) return NotFound();
+
+			_fileService.DeleteFile(post.ImageUrl);
 
 			_appDbContext.Posts.Remove(post);
 			_appDbContext.SaveChanges();

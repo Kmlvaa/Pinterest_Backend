@@ -69,6 +69,14 @@ namespace Pinterest.Controllers
 			data.Gender = dto.Gender;
 			data.ProfilePicUrl = dto.ProfileUrl;
 
+			var user = _dbContext.AppUsers.FirstOrDefault(x => x.Id == userIdClaim.Value);
+			if (user == null) return NotFound();
+
+			user.FirstName = dto.Firstname;
+			user.LastName = dto.Lastname;
+			user.UserName = dto.Username;
+
+			_dbContext.Update(user);
 			_dbContext.Update(data);
 			_dbContext.SaveChanges();
 

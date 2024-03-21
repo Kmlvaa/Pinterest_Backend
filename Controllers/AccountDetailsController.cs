@@ -63,12 +63,13 @@ namespace Pinterest.Controllers
 				data.BirthDate = dto.Birthdate;
 				data.Country = dto.Country;
 
-				var user = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
+				var user = _dbContext.AppUsers.FirstOrDefault(x => x.Id == userId);
 				if (user == null) return BadRequest();
 
 				user.Email = dto.Email;
 				user.UserName = dto.Username;
 
+				_dbContext.Update(user);
 				_dbContext.Update(data);
 				_dbContext.SaveChanges();
 

@@ -18,8 +18,8 @@ namespace Pinterest.Controllers
 			_httpContextAccessor = httpContextAccessor;
 		}
 		[HttpGet]
-		[Route("getFollowers")]
-		public IActionResult GetFollowers()
+		[Route("getFollowers/{id}")]
+		public IActionResult GetFollowers(string id)
 		{
 			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
 
@@ -30,7 +30,7 @@ namespace Pinterest.Controllers
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
 			var userId = userIdClaim.Value;
 
-			var followers = _dbContext.FollowerUsers.Where(x => x.AppUserId == userId).ToList();
+			var followers = _dbContext.FollowerUsers.Where(x => x.AppUserId == id).ToList();
 			if(followers is null) return NotFound();
 
 			var list = new List<GetFollowerDto>();
@@ -40,7 +40,7 @@ namespace Pinterest.Controllers
 				var dto = new GetFollowerDto()
 				{
 					Username = _dbContext.AppUsers.FirstOrDefault(x => x.Id == userId).UserName,
-					AppUserId = userId
+					AppUserId = id
 				};
 				list.Add(dto);
 			}
@@ -49,8 +49,8 @@ namespace Pinterest.Controllers
 		}
 
 		[HttpPost]
-		[Route("addFollower")]
-		public IActionResult AddFollower()
+		[Route("addFollower/{id}")]
+		public IActionResult AddFollower(string id)
 		{
 			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
 
@@ -63,7 +63,7 @@ namespace Pinterest.Controllers
 
 			var follower = new FollowerUser()
 			{
-				AppUserId = userId,
+				AppUserId = id,
 				Username = _dbContext.AppUsers.FirstOrDefault(x => x.Id == userId).UserName
 			};
 			_dbContext.FollowerUsers.Add(follower);

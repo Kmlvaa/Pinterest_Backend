@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Pinterest.Data;
+using Pinterest.DTOs.Comment;
+using Pinterest.DTOs.Like;
 using Pinterest.DTOs.Post;
 using Pinterest.Entities;
 using Pinterest.Services;
 using System.IdentityModel.Tokens.Jwt;
+using System.Xml.Linq;
 
 namespace Pinterest.Controllers
 {
@@ -45,8 +49,8 @@ namespace Pinterest.Controllers
 			return Ok(list);
 		}
 		[HttpGet]
-		[Route("getPosts")]
-		public IActionResult GetPosts()
+		[Route("getUserPosts")]
+		public IActionResult GetUserPosts()
 		{
 			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
 
@@ -60,11 +64,11 @@ namespace Pinterest.Controllers
 			var userId = userIdClaim.Value;
 			var username = userNameClaim.Value;
 
-			var posts = _appDbContext.Posts.Where(x => x.AppUserId == userId).ToList();
+			var posts = _appDbContext.Posts.Where(x => x.AppUserId == userId);
 			if (posts is null) return NotFound();
 
 			var list = new List<GetPostDto>();
-
+			
 			foreach (var post in posts)
 			{
 				var postDto = new GetPostDto()
@@ -74,7 +78,7 @@ namespace Pinterest.Controllers
 					Description = post.Description,
 					CreatedAt = post.CreatedAt,
 					Url = post.ImageUrl,
-					User = username
+					User = username,
 				};
 				list.Add(postDto);
 			}
@@ -84,7 +88,7 @@ namespace Pinterest.Controllers
 
 		[HttpPost]
 		[Route("addPost")]
-		public IActionResult AddPost([FromBody] AddPostDto dto)
+		public IActionResult AddPost([FromForm] AddPostDto dto)
 		{
 			if (!ModelState.IsValid) return NotFound();
 			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
@@ -125,6 +129,55 @@ namespace Pinterest.Controllers
 			_appDbContext.SaveChanges();
 
 			return Ok();
+		}
+		[HttpGet]
+		[Route("getPostDetails/{id}")]
+		public IActionResult GetPostDetails(int id)
+		{
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+
+			var tokenHandler = new JwtSecurityTokenHandler();
+
+			var token = tokenHandler.ReadJwtToken(accessToken);
+
+			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
+			var userNameClaim = token.Claims.FirstOrDefault(x => x.Type == "Username");
+
+			var userId = userIdClaim.Value;
+			var username = userNameClaim.Value;
+
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post is null) return NotFound();
+
+			var postDto = new GetPostDetailsDto()
+			{
+				Id = post.Id,
+				Title = post.Title,
+				Description = post.Description,
+				CreatedAt = post.CreatedAt,
+				Url = post.ImageUrl,
+				User = username,
+				Comments = new List<GetCommentsDto>()
+				{
+					new GetCommentsDto()
+					{
+						PostId = post.Id,
+						Username = username,
+						Comment = _appDbContext.Comments.Where(x => x.PostId == post.Id).FirstOrDefault(x => x.AppUserId == userId).Description,
+						CreatedAt = _appDbContext.Comments.Where(x => x.PostId == post.Id).FirstOrDefault(x => x.AppUserId == userId).CreatedDate
+					}
+				},
+				Likes = new List<GetLikeDto>()
+				{
+					new GetLikeDto()
+					{
+						PostId = post.Id,
+						Username = _appDbContext.Likes.Where(x => x.PostId == post.Id).FirstOrDefault(x => x.AppUserId == userId).AppUserId,
+					}
+				}
+			};
+				
+			return Ok(postDto);
 		}
 	}
 }

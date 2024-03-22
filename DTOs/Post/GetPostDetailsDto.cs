@@ -3,7 +3,7 @@ using Pinterest.DTOs.Like;
 
 namespace Pinterest.DTOs.Post
 {
-	public class GetPostDto
+	public class GetPostDetailsDto
 	{
 		public int Id { get; set; }
 		public string Title { get; set; }
@@ -11,5 +11,7 @@ namespace Pinterest.DTOs.Post
 		public DateTime CreatedAt { get; set; }
 		public string Url { get; set; }
 		public string User { get; set; }
+		public List<GetCommentsDto> Comments { get; set; }
+		public List<GetLikeDto> Likes { get; set; }
 	}
 }

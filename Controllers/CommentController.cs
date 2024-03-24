@@ -71,7 +71,7 @@ namespace Pinterest.Controllers
 			_appDbContext.Comments.Add(comment);
 			_appDbContext.SaveChanges();
 
-			return Ok();
+			return Ok("Comment is added!");
 		}
 		[HttpDelete]
 		[Route("deleteComment/{id}")]
@@ -83,7 +83,7 @@ namespace Pinterest.Controllers
 			_appDbContext.Comments.Remove(comment);
 			_appDbContext.SaveChanges();
 
-			return Ok();
+			return Ok("Comment deleted successfully!");
 		}
 	}
 }

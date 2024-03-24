@@ -13,6 +13,8 @@ using System.Text;
 
 namespace Pinterest.Controllers
 {
+	[Route("api/[controller]")]
+	[ApiController]
 	public class AccountController : ControllerBase
 	{
 		private readonly IAuthService _authService;
@@ -63,10 +65,6 @@ namespace Pinterest.Controllers
 			}
 
 			return Ok(message);
-		}
-		public async Task<IActionResult> LogOut()
-		{
-			return RedirectToAction(nameof(Login));
 		}
 	}
 }

@@ -10,6 +10,10 @@ namespace Pinterest.AutoMapper
 		{
 			CreateMap<Post, GetPostDto>();
 			CreateMap<AddPostDto, Post>();
+			CreateMap<Post, GetPostDetailsDto>()
+				.ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+				.ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments))
+				.ForMember(dest => dest.Likes, opt => opt.MapFrom(src => src.Likes));
 		}
 	}
 }

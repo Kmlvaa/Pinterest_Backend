@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Pinterest.Data;
 using Pinterest.DTOs.User;
 
 namespace Pinterest.Controllers
 {
+	[Route("api/[controller]")]
+	[ApiController]
 	public class UserController : ControllerBase
 	{
 		public readonly AppDbContext _appDbContext;
@@ -34,6 +37,20 @@ namespace Pinterest.Controllers
 				list.Add(dto);
 			}
 			return Ok(list);
+		}
+
+		[HttpDelete]
+		[Route("deleteUser/{id}")]
+		[Authorize]
+		public IActionResult DeleteUser(string id)
+		{
+			var user = _appDbContext.AppUsers.FirstOrDefault(x => x.Id == id);
+			if (user == null) return NotFound();
+
+			_appDbContext.AppUsers.Remove(user);
+			_appDbContext.SaveChanges();
+
+			return Ok("User deleted successfully!");
 		}
 	}
 }

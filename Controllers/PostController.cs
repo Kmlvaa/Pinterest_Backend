@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Pinterest.Data;
 using Pinterest.DTOs.Comment;
@@ -37,6 +38,7 @@ namespace Pinterest.Controllers
 			{
 				var postDto = new GetAllPostsDto()
 				{
+					Id = post.Id,
 					Title = post.Title,
 					Description = post.Description,
 					CreatedAt = post.CreatedAt,
@@ -49,14 +51,15 @@ namespace Pinterest.Controllers
 			return Ok(list);
 		}
 		[HttpGet]
-		[Route("getUserPosts")]
-		public IActionResult GetUserPosts()
+		[Route("getPosts")]
+		public IActionResult GetPosts()
 		{
 			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 
 			var token = tokenHandler.ReadJwtToken(accessToken);
+			if (token is null) return BadRequest("An error occurred in generating the token");
 
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
 			var userNameClaim = token.Claims.FirstOrDefault(x => x.Type == "Username");
@@ -65,6 +68,31 @@ namespace Pinterest.Controllers
 			var username = userNameClaim.Value;
 
 			var posts = _appDbContext.Posts.Where(x => x.AppUserId == userId);
+			if (posts is null) return NotFound();
+
+			var list = new List<GetPostDto>();
+
+			foreach (var post in posts)
+			{
+				var postDto = new GetPostDto()
+				{
+					Id = post.Id,
+					Title = post.Title,
+					Description = post.Description,
+					CreatedAt = post.CreatedAt,
+					Url = post.ImageUrl,
+					User = username
+				};
+				list.Add(postDto);
+			}
+
+			return Ok(list);
+		}
+		[HttpGet]
+		[Route("getUserPosts/{id}")]
+		public IActionResult GetUserPosts(string id)
+		{
+			var posts = _appDbContext.Posts.Where(x => x.AppUserId == id);
 			if (posts is null) return NotFound();
 
 			var list = new List<GetPostDto>();
@@ -78,7 +106,7 @@ namespace Pinterest.Controllers
 					Description = post.Description,
 					CreatedAt = post.CreatedAt,
 					Url = post.ImageUrl,
-					User = username,
+					User = _appDbContext.AppUsers.FirstOrDefault(x => x.Id == id).UserName,
 				};
 				list.Add(postDto);
 			}
@@ -114,7 +142,7 @@ namespace Pinterest.Controllers
 			_appDbContext.Posts.Add(post);
 			_appDbContext.SaveChanges();
 
-			return Ok();
+			return Ok("Post is created successfully!");
 		}
 		[HttpDelete]
 		[Route("deletePost/{id}")]
@@ -123,32 +151,59 @@ namespace Pinterest.Controllers
 			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
 			if (post is null) return NotFound();
 
+			var comments = _appDbContext.Comments.Where(x => x.PostId == id).ToList();
+			foreach(var comment in comments)
+			{
+				_appDbContext.Comments.Remove(comment);	
+			}
+			var likes = _appDbContext.Likes.Where(x => x.PostId == id).ToList();
+			foreach (var like in likes)
+			{
+				_appDbContext.Likes.Remove(like);
+			}
+
 			_fileService.DeleteFile(post.ImageUrl);
 
 			_appDbContext.Posts.Remove(post);
 			_appDbContext.SaveChanges();
 
-			return Ok();
+			return Ok("Post is deleted successfully!");
 		}
 		[HttpGet]
 		[Route("getPostDetails/{id}")]
 		public IActionResult GetPostDetails(int id)
 		{
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
-
-			var tokenHandler = new JwtSecurityTokenHandler();
-
-			var token = tokenHandler.ReadJwtToken(accessToken);
-
-			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
-			var userNameClaim = token.Claims.FirstOrDefault(x => x.Type == "Username");
-
-			var userId = userIdClaim.Value;
-			var username = userNameClaim.Value;
-
-			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			var post = _appDbContext.Posts.Include(x => x.Comments).Include(x => x.Likes).FirstOrDefault(x => x.Id == id);
 			if (post is null) return NotFound();
 
+			var comments = post.Comments.ToList();
+			var commentList = new List<GetCommentsDto>();
+
+			foreach( var comment in comments )
+			{
+				var commentItem = new GetCommentsDto
+				{
+					Id = comment.Id,
+					PostId = post.Id,
+					Username = _appDbContext.Users.FirstOrDefault(x => x.Id == comment.AppUserId).UserName,
+					Comment = comment.Description,
+					CreatedAt = comment.CreatedDate
+				};
+				commentList.Add(commentItem);
+			}
+			var likes = post.Likes.ToList();
+			var likeList = new List<GetLikeDto>();
+
+			foreach ( var like in likes)
+			{
+				var likeItem = new GetLikeDto
+				{
+					Id = like.Id,
+					PostId = like.PostId,
+					Username = _appDbContext.Users.FirstOrDefault(x => x.Id == like.AppUserId).UserName
+				};
+				likeList.Add(likeItem);
+			}
 			var postDto = new GetPostDetailsDto()
 			{
 				Id = post.Id,
@@ -156,25 +211,9 @@ namespace Pinterest.Controllers
 				Description = post.Description,
 				CreatedAt = post.CreatedAt,
 				Url = post.ImageUrl,
-				User = username,
-				Comments = new List<GetCommentsDto>()
-				{
-					new GetCommentsDto()
-					{
-						PostId = post.Id,
-						Username = username,
-						Comment = _appDbContext.Comments.Where(x => x.PostId == post.Id).FirstOrDefault(x => x.AppUserId == userId).Description,
-						CreatedAt = _appDbContext.Comments.Where(x => x.PostId == post.Id).FirstOrDefault(x => x.AppUserId == userId).CreatedDate
-					}
-				},
-				Likes = new List<GetLikeDto>()
-				{
-					new GetLikeDto()
-					{
-						PostId = post.Id,
-						Username = _appDbContext.Likes.Where(x => x.PostId == post.Id).FirstOrDefault(x => x.AppUserId == userId).AppUserId,
-					}
-				}
+				User = _appDbContext.Users.FirstOrDefault(x => x.Id == post.AppUserId).UserName,
+				Comments = commentList,
+				Likes = likeList
 			};
 				
 			return Ok(postDto);

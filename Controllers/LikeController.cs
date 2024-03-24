@@ -43,7 +43,7 @@ namespace Pinterest.Controllers
 			_appDbContext.Likes.Add(like);
 			_appDbContext.SaveChanges();
 
-			return Ok();
+			return Ok("You liked this post!");
 		}
 		[HttpGet]
 		[Route("getLikes/{id}")]

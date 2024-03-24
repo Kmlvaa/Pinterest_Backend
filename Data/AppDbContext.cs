@@ -19,7 +19,7 @@ namespace Pinterest.Data
 		public DbSet<Post> Posts { get; set; }
 		public DbSet<Comment> Comments { get; set; }
 		public DbSet<Like> Likes { get; set; }
-		public DbSet<Saved> Saveds { get; set; }
+		public DbSet<Save> Saveds { get; set; }
 		public DbSet<FollowedUser> FollowedUsers { get; set; }
 		public DbSet<FollowerUser> FollowerUsers { get; set;}
 

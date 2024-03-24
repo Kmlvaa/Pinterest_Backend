@@ -11,7 +11,7 @@ namespace Pinterest.Entities
 		public List<Post> Posts { get; set; }
 		public List<FollowedUser> FollowedUsers { get; set; }
 		public List<FollowerUser> FollowerUsers { get; set; }
-		public List<Saved> Saveds { get; set; }
+		public List<Save> Saveds { get; set; }
 		public List<Comment> Comments { get; set; }
 	}
 }

@@ -21,6 +21,12 @@ namespace Pinterest
 
 			var app = builder.Build();
 
+			app.UseSwaggerUI(c =>
+			{
+				c.SwaggerEndpoint("v1/swagger.json", "V1 Docs");
+
+			});
+
 			await DataSeed.InitializeAsync(app.Services);
 
 			if (app.Environment.IsDevelopment())

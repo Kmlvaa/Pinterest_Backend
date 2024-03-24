@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pinterest.Data;
@@ -14,10 +15,12 @@ namespace Pinterest.Controllers
 	{
 		private readonly AppDbContext _dbContext;
 		private readonly IHttpContextAccessor _httpContextAccessor;
-		public ProfileController(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor)
+		private readonly UserManager<AppUser> _userManager;
+		public ProfileController(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<AppUser> userManager)
 		{
 			_dbContext = dbContext;
 			_httpContextAccessor = httpContextAccessor;
+			_userManager = userManager;
 		}
 
 		[HttpGet]
@@ -48,7 +51,7 @@ namespace Pinterest.Controllers
 
 		[HttpPut]
 		[Route("putUserDetails")]
-		public IActionResult PutUserDetails(EditProfileDto dto)
+		public async Task<IActionResult> PutUserDetails(EditProfileDto dto)
 		{
 			if (!ModelState.IsValid) return BadRequest();
 
@@ -76,11 +79,13 @@ namespace Pinterest.Controllers
 			user.LastName = dto.Lastname;
 			user.UserName = dto.Username;
 
+			await _userManager.UpdateAsync(user);
+
 			_dbContext.Update(user);
 			_dbContext.Update(data);
 			_dbContext.SaveChanges();
 
-			return Ok();
+			return Ok("User details updated!");
 		}
 	}
 }

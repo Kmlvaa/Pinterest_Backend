@@ -7,7 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api")]
 	[ApiController]
 	public class LikeController : ControllerBase
 	{
@@ -22,7 +22,7 @@ namespace Pinterest.Controllers
 		[Route("addLike/{id}")]
 		public IActionResult AddLike(int id)
 		{
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -50,10 +50,10 @@ namespace Pinterest.Controllers
 		public IActionResult GetLikes(int id)
 		{
 			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
-			if (post == null) return NotFound();
+			if (post is null) return NotFound();
 
 			var likes = _appDbContext.Likes.Where(x => x.PostId == post.Id).ToList();
-			if (likes == null) return NotFound();
+			if (likes is null) return NotFound();
 
 			var list = new List<GetLikeDto>();
 
@@ -69,6 +69,27 @@ namespace Pinterest.Controllers
 			}
 
 			return Ok(list);
+		}
+		[HttpDelete]
+		[Route("unLike/{id}")]
+		public IActionResult UnLike(int id)
+		{
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+			var tokenHandler = new JwtSecurityTokenHandler();
+
+			var token = tokenHandler.ReadJwtToken(accessToken);
+
+			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
+			var userId = userIdClaim.Value;
+
+			var like = _appDbContext.Likes.Where(x => x.PostId == id).FirstOrDefault(x => x.AppUserId == userId);
+			if (like is null) return NotFound();
+
+			_appDbContext.Likes.Remove(like);
+			_appDbContext.SaveChanges();
+
+			return Ok("You unliked this post!");
 		}
 	}
 }

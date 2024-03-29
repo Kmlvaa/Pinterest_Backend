@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Pinterest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api")]
 	[ApiController]
 	public class AccountController : ControllerBase
 	{
@@ -40,11 +40,15 @@ namespace Pinterest.Controllers
 				return BadRequest(errorMessage);
 			}
 
-			var (status, message) = await _authService.Login(dto);
+			var (status,userId, message) = await _authService.Login(dto);
 			if (status == 0)
 				return BadRequest(message);
-
-			return Ok(message);
+			
+			return Ok(new LoginInfoDto()
+			{
+				Token = message,
+				Id = userId,
+			});
 		}
 		[HttpPost]
 		[Route("Register")]

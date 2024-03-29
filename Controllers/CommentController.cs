@@ -7,7 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api")]
 	[ApiController]
 	public class CommentController : ControllerBase
 	{
@@ -25,7 +25,7 @@ namespace Pinterest.Controllers
 			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
 			if(post == null) return NotFound();
 
-			var comments = _appDbContext.Comments.Where(x => x.PostId == post.Id).ToList();
+			var comments = _appDbContext.Comments.Where(x => x.PostId == post.Id).OrderByDescending(x => x).ToList();
 			if(comments == null) return NotFound();
 
 			var list = new List<GetCommentsDto>();
@@ -35,7 +35,7 @@ namespace Pinterest.Controllers
 				var dto = new GetCommentsDto()
 				{
 					Id = comment.Id,
-					CreatedAt = comment.CreatedDate,
+					CreatedAt = comment.CreatedDate.ToShortDateString(),
 					Comment = comment.Description,
 					Username = _appDbContext.Users.FirstOrDefault(x => x.Id == comment.AppUserId).UserName,
 					PostId = id
@@ -51,7 +51,7 @@ namespace Pinterest.Controllers
 		{
 			if (!ModelState.IsValid) return NotFound();
 
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var token = tokenHandler.ReadJwtToken(accessToken);
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
@@ -63,7 +63,7 @@ namespace Pinterest.Controllers
 			var comment = new Comment()
 			{
 				Description = dto.Description,
-				CreatedDate = dto.CreatedDate,
+				CreatedDate = DateTime.Now,
 				PostId = id,
 				AppUserId = userId,
 			};

@@ -6,7 +6,7 @@ using Pinterest.Entities;
 
 namespace Pinterest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api")]
 	[ApiController]
 	public class FollowerController : ControllerBase
 	{
@@ -19,9 +19,12 @@ namespace Pinterest.Controllers
 		}
 		[HttpGet]
 		[Route("getFollowers/{id}")]
-		public IActionResult GetFollowers(string id)
+		public IActionResult GetFollowers(int id)
 		{
-			var followers = _dbContext.FollowerUsers.Where(x => x.AppUserId == id).ToList();
+			var post = _dbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post == null) return NotFound();
+
+			var followers = _dbContext.FollowerUsers.Where(x => x.AppUserId == post.AppUserId).ToList();
 			if(followers is null) return NotFound();
 
 			var list = new List<GetFollowerDto>();
@@ -31,20 +34,20 @@ namespace Pinterest.Controllers
 				var dto = new GetFollowerDto()
 				{
 					Id = follower.Id,
-					Username = _dbContext.AppUsers.FirstOrDefault(x => x.Id == id).UserName,
+					Username = _dbContext.AppUsers.FirstOrDefault(x => x.Id == post.AppUserId).UserName,
 					Follower = follower.Username
 				};
 				list.Add(dto);
 			}
 
-			return Ok(list);
+			return Ok(list.Count);
 		}
 
 		[HttpPost]
 		[Route("addFollower/{id}")]
 		public IActionResult AddFollower(string id)
 		{
-			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -72,7 +75,7 @@ namespace Pinterest.Controllers
 		[Route("unFollow/{id}")]
 		public IActionResult UnFollow(string id)
 		{
-			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 

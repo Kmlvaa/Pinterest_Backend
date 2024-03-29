@@ -75,13 +75,13 @@ namespace Pinterest.Services
 
 			return (1, "User created successfully!");
 		}
-		public async Task<(int, string)> Login(LoginDto dto)
+		public async Task<(int, string, string)> Login(LoginDto dto)
 		{
 			var user = await _userManager.FindByNameAsync(dto.Username);
 			if (user == null) 
-				return (0, "Invalid Username!");
+				return (0, user.Id, "Invalid Username!");
 			if (!await _userManager.CheckPasswordAsync(user, dto.Password)) 
-				return (0, "Invalid Password!");
+				return (0, user.Id, "Invalid Password!");
 
 			var userRoles = await _userManager.GetRolesAsync(user);
 			var authClaims = new List<Claim>
@@ -96,7 +96,7 @@ namespace Pinterest.Services
 				authClaims.Add(new Claim(ClaimTypes.Role, userRole));
 			}
 			string token = GenerateToken(authClaims);
-			return (1, token);
+			return (1, user.Id, token);
 		}
 		private string GenerateToken(IEnumerable<Claim> claims)
 		{

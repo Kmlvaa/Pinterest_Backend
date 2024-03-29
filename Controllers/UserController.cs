@@ -4,8 +4,8 @@ using Pinterest.Data;
 using Pinterest.DTOs.User;
 
 namespace Pinterest.Controllers
-{
-	[Route("api/[controller]")]
+{	
+	[Route("api")]
 	[ApiController]
 	public class UserController : ControllerBase
 	{
@@ -41,7 +41,6 @@ namespace Pinterest.Controllers
 
 		[HttpDelete]
 		[Route("deleteUser/{id}")]
-		[Authorize]
 		public IActionResult DeleteUser(string id)
 		{
 			var user = _appDbContext.AppUsers.FirstOrDefault(x => x.Id == id);

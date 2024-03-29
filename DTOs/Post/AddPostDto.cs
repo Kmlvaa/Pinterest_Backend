@@ -7,7 +7,6 @@ namespace Pinterest.DTOs.Post
 		public string Title { get; set; }
 		public string Description { get; set; }
 		public DateTime CreatedAt { get; set; }
-		[Required]
 		public IFormFile? Url { get; set; }
 	}
 }

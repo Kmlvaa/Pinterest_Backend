@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
 {
-		[Route("api/[controller]")]
+		[Route("api")]
 		[ApiController]
 		public class AccountDetailsController : ControllerBase
 		{
@@ -52,7 +52,7 @@ namespace Pinterest.Controllers
 			{
 				if (!ModelState.IsValid) return BadRequest();
 
-				var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+				var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 				var tokenHandler = new JwtSecurityTokenHandler();
 				var token = tokenHandler.ReadJwtToken(accessToken);
 				if (token is null) return BadRequest();
@@ -75,7 +75,6 @@ namespace Pinterest.Controllers
 
 				await _userManager.UpdateAsync(user);
 
-				_dbContext.Update(user);
 				_dbContext.Update(data);
 				_dbContext.SaveChanges();
 

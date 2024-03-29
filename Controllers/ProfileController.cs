@@ -9,7 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api")]
 	[ApiController]
 	public class ProfileController : ControllerBase
 	{
@@ -27,7 +27,7 @@ namespace Pinterest.Controllers
 		[Route("getUserDetails")]
 		public IActionResult GetUserDetails()
 		{
-			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var token = tokenHandler.ReadJwtToken(accessToken);
 			var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
@@ -48,14 +48,36 @@ namespace Pinterest.Controllers
 
 			return Ok(dto);
 		}
+		[HttpGet]
+		[Route("getOtherUserDetails/{id}")]
+		public IActionResult GetOtherUserDetails(int id)
+		{
+			var post = _dbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post == null) return NotFound();
+
+			var data = _dbContext.UserDetails.FirstOrDefault(x => x.AppUserId == post.AppUserId);
+			if (data == null) return NotFound();
+
+			var dto = new GetUserDetailsDto
+			{
+				Firstname = data.Firstname,
+				Lastname = data.Lastname,
+				Username = data.Username,
+				About = data.About,
+				ProfileUrl = data.ProfilePicUrl,
+				Gender = data.Gender,
+			};
+
+			return Ok(dto);
+		}
 
 		[HttpPut]
 		[Route("putUserDetails")]
-		public async Task<IActionResult> PutUserDetails(EditProfileDto dto)
+		public async Task<IActionResult> PutUserDetails([FromForm]EditProfileDto dto)
 		{
 			if (!ModelState.IsValid) return BadRequest();
 
-			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var token = tokenHandler.ReadJwtToken(accessToken);
 			if(token is null) return BadRequest();
@@ -81,7 +103,6 @@ namespace Pinterest.Controllers
 
 			await _userManager.UpdateAsync(user);
 
-			_dbContext.Update(user);
 			_dbContext.Update(data);
 			_dbContext.SaveChanges();
 

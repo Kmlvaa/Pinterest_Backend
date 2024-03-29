@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Pinterest.Data;
+using Pinterest.DTOs.Post;
 using Pinterest.DTOs.Saved;
 using Pinterest.Entities;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api")]
 	[ApiController]
 	public class SavedController : ControllerBase
 	{
@@ -21,7 +22,7 @@ namespace Pinterest.Controllers
 		[Route("addSaved/{id}")]
 		public IActionResult AddSaved(int id)
 		{
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -55,26 +56,28 @@ namespace Pinterest.Controllers
 		{
 			var saveds = _appDbContext.Saveds.Where(x => x.AppUserId == id).ToList();
 
-			var list = new List<GetSavedDto>();
+			var posts = new List<GetPostDto>();
 
 			foreach (var saved in saveds)
 			{
-				var dto = new GetSavedDto()
+				var dto = new GetPostDto()
 				{
-					Id = saved.Id,
-					PostId = saved.PostId,
-					UserId = saved.AppUserId,
+					Id = saved.PostId,
+					Title = _appDbContext.Posts.FirstOrDefault(x => x.Id == saved.PostId).Title,
+					Description = _appDbContext.Posts.FirstOrDefault(x => x.Id == saved.PostId).Description,
+					Url = _appDbContext.Posts.FirstOrDefault(x => x.Id == saved.PostId).ImageUrl,
+					CreatedAt = _appDbContext.Posts.FirstOrDefault(x => x.Id == saved.PostId).CreatedAt,
+					User = _appDbContext.Posts.FirstOrDefault(x => x.Id == saved.PostId).AppUserId
 				};
-				list.Add(dto);
+				posts.Add(dto);
 			}
-
-			return Ok(list);
+			return Ok(posts);
 		}
 		[HttpDelete]
 		[Route("deleteSaved/{id}")]
 		public IActionResult DeleteSaved(int id)
 		{
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 

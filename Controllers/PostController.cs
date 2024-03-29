@@ -12,7 +12,7 @@ using System.Xml.Linq;
 
 namespace Pinterest.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api")]
 	[ApiController]
 	public class PostController : ControllerBase
 	{
@@ -54,7 +54,7 @@ namespace Pinterest.Controllers
 		[Route("getPosts")]
 		public IActionResult GetPosts()
 		{
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -118,8 +118,8 @@ namespace Pinterest.Controllers
 		[Route("addPost")]
 		public IActionResult AddPost([FromForm] AddPostDto dto)
 		{
-			if (!ModelState.IsValid) return NotFound();
-			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+			if (!ModelState.IsValid) return NotFound("Something went wrong!");
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -144,6 +144,26 @@ namespace Pinterest.Controllers
 
 			return Ok("Post is created successfully!");
 		}
+		[HttpPut]
+		[Route("editPost/{id}")]
+		public IActionResult EditPost(int id, [FromBody] EditPostDto dto)
+		{
+			if (!ModelState.IsValid) return NotFound("Something went wrong!");
+
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post == null) return NotFound();
+
+			post.Title = dto.Title;
+			post.Description = dto.Description;
+			post.CreatedAt = DateTime.UtcNow;
+
+			_appDbContext.Posts.Update(post);
+			_appDbContext.SaveChanges();
+
+			return Ok("Post is updated!");
+		}
+
+
 		[HttpDelete]
 		[Route("deletePost/{id}")]
 		public IActionResult DeletePost(int id)
@@ -187,7 +207,7 @@ namespace Pinterest.Controllers
 					PostId = post.Id,
 					Username = _appDbContext.Users.FirstOrDefault(x => x.Id == comment.AppUserId).UserName,
 					Comment = comment.Description,
-					CreatedAt = comment.CreatedDate
+					CreatedAt = comment.CreatedDate.ToShortDateString(),
 				};
 				commentList.Add(commentItem);
 			}
@@ -209,7 +229,7 @@ namespace Pinterest.Controllers
 				Id = post.Id,
 				Title = post.Title,
 				Description = post.Description,
-				CreatedAt = post.CreatedAt,
+				CreatedAt = post.CreatedAt.ToShortDateString(),
 				Url = post.ImageUrl,
 				User = _appDbContext.Users.FirstOrDefault(x => x.Id == post.AppUserId).UserName,
 				Comments = commentList,

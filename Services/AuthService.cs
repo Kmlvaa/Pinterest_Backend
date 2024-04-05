@@ -59,7 +59,7 @@ namespace Pinterest.Services
 				Username = dto.Username,
 				About = "About",
 				Gender = "Gender",
-				ProfilePicUrl = "random"
+				ProfilePicUrl = "user.png"
 			};
 			AccountDetails accountManagement = new AccountDetails()
 			{
@@ -79,9 +79,9 @@ namespace Pinterest.Services
 		{
 			var user = await _userManager.FindByNameAsync(dto.Username);
 			if (user == null) 
-				return (0, user.Id, "Invalid Username!");
+				return (0, "", "User not found!");
 			if (!await _userManager.CheckPasswordAsync(user, dto.Password)) 
-				return (0, user.Id, "Invalid Password!");
+				return (0, "", "Invalid Password!");
 
 			var userRoles = await _userManager.GetRolesAsync(user);
 			var authClaims = new List<Claim>

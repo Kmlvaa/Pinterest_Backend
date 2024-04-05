@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Identity;
+using Pinterest.Data;
 using Pinterest.Entities;
 
 namespace Pinterest.Helper

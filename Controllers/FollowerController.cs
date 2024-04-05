@@ -19,12 +19,9 @@ namespace Pinterest.Controllers
 		}
 		[HttpGet]
 		[Route("getFollowers/{id}")]
-		public IActionResult GetFollowers(int id)
+		public IActionResult GetFollowers(string id)
 		{
-			var post = _dbContext.Posts.FirstOrDefault(x => x.Id == id);
-			if (post == null) return NotFound();
-
-			var followers = _dbContext.FollowerUsers.Where(x => x.AppUserId == post.AppUserId).ToList();
+			var followers = _dbContext.FollowerUsers.Where(x => x.AppUserId == id).ToList();
 			if(followers is null) return NotFound();
 
 			var list = new List<GetFollowerDto>();
@@ -34,7 +31,7 @@ namespace Pinterest.Controllers
 				var dto = new GetFollowerDto()
 				{
 					Id = follower.Id,
-					Username = _dbContext.AppUsers.FirstOrDefault(x => x.Id == post.AppUserId).UserName,
+					Username = _dbContext.AppUsers.FirstOrDefault(x => x.Id == id).UserName,
 					Follower = follower.Username
 				};
 				list.Add(dto);
@@ -58,6 +55,11 @@ namespace Pinterest.Controllers
 			var userId = userIdClaim.Value;
 			var username = usernameClaim.Value;
 
+			if(id == userId)
+			{
+				return BadRequest("You can not follow yourself");
+			}
+
 			var existingUser = _dbContext.FollowerUsers.Where(x => x.AppUserId == id).FirstOrDefault(x => x.Username == username);
 			if (existingUser != null) return BadRequest("User already followed!");
 
@@ -71,7 +73,7 @@ namespace Pinterest.Controllers
 
 			return Ok("User is followed!");
 		}
-		[HttpPost]
+		[HttpDelete]
 		[Route("unFollow/{id}")]
 		public IActionResult UnFollow(string id)
 		{
@@ -91,6 +93,24 @@ namespace Pinterest.Controllers
 			_dbContext.SaveChanges();
 
 			return Ok("You unfollowed this account!");
+		}
+		[HttpGet]
+		[Route("isUserFollowed/{id}")]
+		public IActionResult IsUserFollowed(string id)
+		{
+			var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+			var tokenHandler = new JwtSecurityTokenHandler();
+
+			var token = tokenHandler.ReadJwtToken(accessToken);
+
+			var usernameClaim = token.Claims.FirstOrDefault(x => x.Type == "Username");
+			var username = usernameClaim.Value;
+
+			var user = _dbContext.FollowerUsers.Where(x => x.Username == username).FirstOrDefault(x => x.AppUserId == id);
+
+			if (user is not null) return Ok(true);
+			else return Ok(false);
 		}
 	}
 }

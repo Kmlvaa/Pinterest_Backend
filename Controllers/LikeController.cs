@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Pinterest.Data;
 using Pinterest.DTOs.Comment;
 using Pinterest.DTOs.Like;
@@ -52,7 +53,7 @@ namespace Pinterest.Controllers
 			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
 			if (post is null) return NotFound();
 
-			var likes = _appDbContext.Likes.Where(x => x.PostId == post.Id).ToList();
+			var likes = _appDbContext.Likes.Where(x => x.PostId == post.Id).OrderByDescending(x => x).ToList();
 			if (likes is null) return NotFound();
 
 			var list = new List<GetLikeDto>();
@@ -90,6 +91,26 @@ namespace Pinterest.Controllers
 			_appDbContext.SaveChanges();
 
 			return Ok("You unliked this post!");
+		}
+		[HttpGet]
+		[Route("isPostLiked/{id}")]
+		public IActionResult IsPostLiked(int id)
+		{
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+			var tokenHandler = new JwtSecurityTokenHandler();
+
+			var token = tokenHandler.ReadJwtToken(accessToken);
+
+			var usernameClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
+			var userId = usernameClaim.Value;
+
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post is null) return NotFound();
+
+			var user = _appDbContext.Likes.Where(x => x.PostId == post.Id).FirstOrDefault(x => x.AppUserId == userId);
+			if (user is not null) return Ok(true);
+			else return Ok(false);
 		}
 	}
 }

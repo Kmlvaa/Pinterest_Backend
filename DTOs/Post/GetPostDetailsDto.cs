@@ -11,6 +11,7 @@ namespace Pinterest.DTOs.Post
 		public string CreatedAt { get; set; }
 		public string Url { get; set; }
 		public string User { get; set; }
+		public string UserId { get; set; }
 		public List<GetCommentsDto> Comments { get; set; }
 		public List<GetLikeDto> Likes { get; set; }
 	}

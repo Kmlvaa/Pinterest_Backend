@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Pinterest.Data;
 using Pinterest.DTOs.Post;
 using Pinterest.DTOs.Saved;
@@ -54,7 +55,7 @@ namespace Pinterest.Controllers
 		[Route("getSaveds/{id}")]
 		public IActionResult GetSaveds(string id)
 		{
-			var saveds = _appDbContext.Saveds.Where(x => x.AppUserId == id).ToList();
+			var saveds = _appDbContext.Saveds.Where(x => x.AppUserId == id).OrderByDescending(x => x).ToList();
 
 			var posts = new List<GetPostDto>();
 
@@ -95,6 +96,27 @@ namespace Pinterest.Controllers
 			_appDbContext.SaveChanges();
 
 			return Ok("Post removed from saveds!");
+		}
+		[HttpGet]
+		[Route("isPostSaved/{id}")]
+		public IActionResult IsPostSaved(int id)
+		{
+			var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+			var tokenHandler = new JwtSecurityTokenHandler();
+
+			var token = tokenHandler.ReadJwtToken(accessToken);
+
+			var usernameClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
+			var userId = usernameClaim.Value;
+
+			var post = _appDbContext.Posts.FirstOrDefault(x => x.Id == id);
+			if (post is null) return NotFound();
+
+			var user = _appDbContext.Saveds.Where(x => x.PostId == id).FirstOrDefault(x => x.AppUserId == userId);
+
+			if (user is not null) return Ok(true);
+			else return Ok(false);
 		}
 	}
 }

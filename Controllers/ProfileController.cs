@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Pinterest.Data;
 using Pinterest.DTOs.Profile;
 using Pinterest.Entities;
+using Pinterest.Services;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
@@ -16,11 +17,13 @@ namespace Pinterest.Controllers
 		private readonly AppDbContext _dbContext;
 		private readonly IHttpContextAccessor _httpContextAccessor;
 		private readonly UserManager<AppUser> _userManager;
-		public ProfileController(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<AppUser> userManager)
+		private readonly FileService _fileService;
+		public ProfileController(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<AppUser> userManager, FileService fileService)
 		{
 			_dbContext = dbContext;
 			_httpContextAccessor = httpContextAccessor;
 			_userManager = userManager;
+			_fileService = fileService;
 		}
 
 		[HttpGet]
@@ -50,12 +53,9 @@ namespace Pinterest.Controllers
 		}
 		[HttpGet]
 		[Route("getOtherUserDetails/{id}")]
-		public IActionResult GetOtherUserDetails(int id)
+		public IActionResult GetOtherUserDetails(string id)
 		{
-			var post = _dbContext.Posts.FirstOrDefault(x => x.Id == id);
-			if (post == null) return NotFound();
-
-			var data = _dbContext.UserDetails.FirstOrDefault(x => x.AppUserId == post.AppUserId);
+			var data = _dbContext.UserDetails.FirstOrDefault(x => x.AppUserId == id);
 			if (data == null) return NotFound();
 
 			var dto = new GetUserDetailsDto
@@ -66,6 +66,7 @@ namespace Pinterest.Controllers
 				About = data.About,
 				ProfileUrl = data.ProfilePicUrl,
 				Gender = data.Gender,
+				UserId = data.AppUserId
 			};
 
 			return Ok(dto);
@@ -87,12 +88,14 @@ namespace Pinterest.Controllers
 			var data = _dbContext.UserDetails.FirstOrDefault(x => x.AppUserId == userId);
 			if (data == null) return NotFound();
 
+			var Url = _fileService.AddFile(dto.ProfileUrl);
+
 			data.Firstname = dto.Firstname;
 			data.Lastname = dto.Lastname;
 			data.Username = dto.Username;
 			data.About = dto.About;
 			data.Gender = dto.Gender;
-			data.ProfilePicUrl = dto.ProfileUrl;
+			data.ProfilePicUrl = Url;
 
 			var user = _dbContext.AppUsers.FirstOrDefault(x => x.Id == userIdClaim.Value);
 			if (user == null) return NotFound();

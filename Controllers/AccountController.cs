@@ -40,7 +40,7 @@ namespace Pinterest.Controllers
 				return BadRequest(errorMessage);
 			}
 
-			var (status,userId, message) = await _authService.Login(dto);
+			var (status, userId, message) = await _authService.Login(dto);
 			if (status == 0)
 				return BadRequest(message);
 			

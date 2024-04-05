@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Pinterest.Helper;
 using Pinterest.Services;
@@ -14,6 +15,7 @@ namespace Pinterest
 			// Add services to the container.
 
 			builder.Services.AddControllers();
+			builder.Services.AddDirectoryBrowser();
 
 			builder.Services.AddEndpointsApiExplorer();
 
@@ -35,6 +37,11 @@ namespace Pinterest
 				app.UseSwaggerUI();
 			}
 			app.UseStaticFiles();
+			app.UseStaticFiles(new StaticFileOptions 
+			{
+				FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "Images")), 
+				RequestPath = "/Images"
+			});
 
 			app.UseHttpsRedirection();
 

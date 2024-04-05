@@ -26,7 +26,7 @@ namespace Pinterest.Controllers
 			[Route("getAccountDetails")]
 			public IActionResult GetAccountDetails()
 			{
-				var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer", "");
+				var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 				var tokenHandler = new JwtSecurityTokenHandler();
 				var token = tokenHandler.ReadJwtToken(accessToken);
 				var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");

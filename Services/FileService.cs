@@ -1,10 +1,13 @@
-﻿namespace Pinterest.Services
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Pinterest.Services
 {
 	public class FileService
 	{
 		public string AddFile(IFormFile file)
 		{
-
 			string path = Path.Combine(Directory.GetCurrentDirectory(), "Images");
 
 			if (!Directory.Exists(path))

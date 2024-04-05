@@ -38,7 +38,9 @@ namespace Pinterest.Controllers
 					CreatedAt = comment.CreatedDate.ToShortDateString(),
 					Comment = comment.Description,
 					Username = _appDbContext.Users.FirstOrDefault(x => x.Id == comment.AppUserId).UserName,
-					PostId = id
+					PostId = id,
+					UserId = comment.AppUserId,
+					Url = _appDbContext.UserDetails.FirstOrDefault(x => x.AppUserId == comment.AppUserId).ProfilePicUrl
 				};
 				list.Add(dto);
 			}

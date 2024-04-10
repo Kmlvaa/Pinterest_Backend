@@ -104,9 +104,15 @@ namespace Pinterest.Controllers
 			user.LastName = dto.Lastname;
 			user.UserName = dto.Username;
 
+			var account = _dbContext.AccountDetails.FirstOrDefault(x => x.AppUserId == userId);
+			if (account == null) return NotFound();
+
+			account.Username = data.Username;
+
 			await _userManager.UpdateAsync(user);
 
 			_dbContext.Update(data);
+			_dbContext.Update(account);
 			_dbContext.SaveChanges();
 
 			return Ok("User details updated!");

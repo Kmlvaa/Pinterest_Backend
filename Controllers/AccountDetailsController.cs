@@ -73,9 +73,15 @@ namespace Pinterest.Controllers
 				user.Email = dto.Email;
 				user.UserName = dto.Username;
 
+				var profile = _dbContext.UserDetails.FirstOrDefault(x =>x.AppUserId == userId);
+				if (profile == null) return NotFound();
+
+				profile.Username = dto.Username;
+
 				await _userManager.UpdateAsync(user);
 
 				_dbContext.Update(data);
+				_dbContext.Update(profile);
 				_dbContext.SaveChanges();
 
 				return Ok("Account details updated!");

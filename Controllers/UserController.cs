@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Pinterest.Data;
 using Pinterest.DTOs.User;
 using Pinterest.Entities;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Pinterest.Controllers
 {	
@@ -12,17 +13,39 @@ namespace Pinterest.Controllers
 	public class UserController : ControllerBase
 	{
 		public readonly AppDbContext _appDbContext;
-		public UserController(AppDbContext appDbContext)
-		{
-			_appDbContext = appDbContext;
-		}
-		[HttpGet]
-		[Route("adminDetails")]
+        private readonly IHttpContextAccessor _contextAccessor;
+        public UserController(AppDbContext appDbContext, IHttpContextAccessor contextAccessor)
+        {
+            _appDbContext = appDbContext;
+            _contextAccessor = contextAccessor;
+        }
+        [HttpGet]
+		[Route("getAdminDetails")]
 		public IActionResult AdminDetails()
 		{
+            var accessToken = _contextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
+            var tokenHandler = new JwtSecurityTokenHandler();
 
-			return Ok();
+            var token = tokenHandler.ReadJwtToken(accessToken);
+            if (token is null) return BadRequest("An error occurred in generating the token");
+
+            var userIdClaim = token.Claims.FirstOrDefault(x => x.Type == "UserID");
+
+            var userId = userIdClaim.Value;
+
+			var admin = _appDbContext.AppUsers.FirstOrDefault(x => x.Id == userId);
+			if (admin == null) return NotFound();
+
+			var dto = new GetAdminDetailsDto()
+			{
+				Username = admin.UserName,
+				Email = admin.Email,
+				Firstname = admin.FirstName,
+				Lastname = admin.LastName,
+			};
+
+            return Ok(dto);
 		}
 
 		[HttpGet]
@@ -65,13 +88,14 @@ namespace Pinterest.Controllers
 		}
 		[HttpGet]
 		[Route("searchUsers")]
-		public IActionResult Search(string? input)
+		public IActionResult Search([FromQuery] string input)
 		{
 			var users = input == null ? new List<AppUser>()
 				: _appDbContext.AppUsers
 				.Where(x => x.UserName.ToLower()
 				.StartsWith(input.ToLower()))
 				.ToList();
+			if (users == null) return NotFound("No matches!");
 
 			return Ok(users);
 		}

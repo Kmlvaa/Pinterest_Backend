@@ -54,7 +54,9 @@ namespace Pinterest.Controllers
 					Description = post.Description,
 					CreatedAt = post.CreatedAt,
 					Url = post.ImageUrl,
-					User = _appDbContext.Users.FirstOrDefault(x => x.Id == post.AppUserId).UserName
+					User = _appDbContext.Users.FirstOrDefault(x => x.Id == post.AppUserId).UserName,
+					UserId = post.AppUserId,
+					UserPhoto = _appDbContext.UserDetails.FirstOrDefault(x => x.AppUserId == post.AppUserId).ProfilePicUrl
 			};
 				list.Add(postDto);
 			}

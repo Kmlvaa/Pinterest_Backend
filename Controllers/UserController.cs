@@ -56,7 +56,7 @@ namespace Pinterest.Controllers
         [Route("getUsers")]
         public IActionResult Index()
         {
-            var users = _appDbContext.UserDetails.Where(x => x.AppUserId != "5b539870-feb9-494a-bdd1-746832ebbea6").ToList();
+            var users = _appDbContext.UserDetails.Where(x => x.AppUserId != "f402f0ac-a652-4920-8cb1-fb1a0bc53208").ToList();
 
             var list = new List<GetUsersDto>();
 
